@@ -1,0 +1,24 @@
+name: ClanFox
+author: ilyshka_fox
+version: 1.3
+main: com.vk.ilyshka_fox.clans.Main
+softdepend:
+- Vault
+commands:
+  clan:
+    aliases:
+    - c
+    description: Open the menu
+permissions:
+  clanfox.player.*:
+    description: Доступ ко всем командам игрока
+    default: true
+  clanfox.eco.*:
+    description: Обход экономики
+    default: op
+  clanfox.admin:
+    description: Обход экономики
+    default: op
+  clanfox.time.delay:
+    description: Обход задержки сообщений в клан
+    default: op

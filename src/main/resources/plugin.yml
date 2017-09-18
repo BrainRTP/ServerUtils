@@ -1,0 +1,14 @@
+name: ServerUtils
+version: ${project.version}
+main: ru.brainrtp.serverutils.Main
+authors: [BrainRTP]
+description: ServerUtils
+website: vk.com/brainrtp
+commands:
+  fw:
+  kb:
+  fly:
+  glow:
+  build:
+  setspawn:
+  gm:
