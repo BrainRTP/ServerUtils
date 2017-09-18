@@ -27,8 +27,6 @@ import java.util.List;
 public class Main extends JavaPlugin implements Listener, PluginMessageListener {
 
     private static HashMap<String, Long> cooldowns = new HashMap<>();
-//    private HashMap<Player, Boolean> kb_users = new HashMap<>();
-//    private Map<Player> =
     static List<Player> kb_users = new ArrayList<Player>();
     private Integer maxRepeat;
     private Integer minCooldown;
@@ -51,7 +49,6 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", this);
 
-//        Config.createFiles(main);
         this.saveDefaultConfig();
         maxRepeat = this.getConfig().getInt("FireWorks.maxRepeat");
         minCooldown = this.getConfig().getInt("FireWorks.maxCooldown");
@@ -76,9 +73,6 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
         if (orthography) {
             pm.registerEvents((Listener) new Chat(this), (Plugin) this);
         }
-        log("Плагин написал BrainRTP для проекта HyNeoCraft");
-
-        log( "§f[§cServerUtils§f] > "+ "Плагин включен");
     }
 
     @Override
@@ -118,7 +112,6 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
         {
             Player player = (Player) sender;
             int cooldownTime = cd;
-//            log("Плагин написал BrainRTP для проекта HyNeoCraft");
 
             switch (cmd.getName()) {
                 case "fw":
@@ -133,7 +126,7 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
 
                     }
                     else if (cmd.getName().equals("fw") && (player.hasPermission("fw.admin")
-                            || player.hasPermission("hyneo.admin")) && args.length == 4) {
+                            || player.hasPermission("admin")) && args.length == 4) {
                         int repeat = (Integer.valueOf(args[0]) <= maxRepeat ? Integer.parseInt(args[0]) : 1);
                         int cooldown = (Integer.valueOf(args[1]) >= minCooldown ? Integer.parseInt(args[1]) : 1);
                         int height = (Integer.valueOf(args[2]) <= maxHeight ? Integer.parseInt(args[2]) : 1);
@@ -149,7 +142,7 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
                     }
                     break;
                 case "setspawn":
-                    if (player.hasPermission("hyneo.admin")){
+                    if (player.hasPermission("admin")){
                         this.getConfig().set("spawn_location", (Object)LocationUtils.locationToString(player.getLocation(), true));
                         player.sendMessage(prefix + "Точка спавна успешно установлена! §7("+player.getLocation().getBlockX() + "," +
                                 player.getLocation().getBlockY() + "," +
@@ -161,7 +154,7 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
                     break;
 
                 case "kb":
-                    if(player.hasPermission("knockback") || player.hasPermission("hyneo.admin")){
+                    if(player.hasPermission("knockback") || player.hasPermission("admin")){
                         if (kb_users.contains(player)){
                             kb_users.remove(player);
                             player.sendMessage(kb_mess.replace("%s", "выключен"));
@@ -176,7 +169,7 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
                     break;
 
                 case "fly":
-                    if (player.hasPermission("fly") || player.hasPermission("hyneo.admin")){
+                    if (player.hasPermission("fly") || player.hasPermission("admin")){
                         if (player.getAllowFlight() || player.isFlying()){
                             player.sendMessage(fly_mess.replace("%s", "выключен"));
                             player.setAllowFlight(false);
@@ -192,7 +185,7 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
                     break;
 
                 case "glow":
-                    if (player.hasPermission("glow") || player.hasPermission("hyneo.admin")){
+                    if (player.hasPermission("glow") || player.hasPermission("admin")){
                         if (player.hasPotionEffect(PotionEffectType.GLOWING)) {
                             player.sendMessage(glow.replace("%s", "выключен"));
                             player.removePotionEffect(PotionEffectType.GLOWING);
@@ -208,7 +201,7 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
                     break;
 
                 case "build":
-                    if (player.hasPermission("hyneo.admin")){
+                    if (player.hasPermission("admin")){
                         if (!build){
                             build = true;
                             player.sendMessage(prefix + "Режим строительства §cвключен.");
@@ -223,60 +216,6 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
                     player.sendMessage("САСАТЬ!");
                     break;
             }
-//
-//            if (cmd.getName().equals("fw") && player.hasPermission("fw") && args.length == 0) {
-//                if (cooldowns.containsKey(player.getName())) {
-//                    long secondsLeft = ((cooldowns.get(player.getName()) / 1000) + cooldownTime) - (System.currentTimeMillis() / 1000);
-//                    if (secondsLeft > 0)
-//                        return false;
-//                }
-//                cooldowns.put(String.valueOf(player.getName()), System.currentTimeMillis());
-//                fw.fw1(player, 1, 1, 0, 1);
-//            }
-//            else if (cmd.getName().equals("fw") && (player.hasPermission("fw.admin")
-//                                                || player.hasPermission("hyneo.admin")) && args.length == 4) {
-//                int repeat = (Integer.valueOf(args[0]) <= maxRepeat ? Integer.parseInt(args[0]) : 1);
-//                int cooldown = (Integer.valueOf(args[1]) >= minCooldown ? Integer.parseInt(args[1]) : 1);
-//                int height = (Integer.valueOf(args[2]) <= maxHeight ? Integer.parseInt(args[2]) : 1);
-//                int amount = (Integer.valueOf(args[3]) <= maxAmmount ? Integer.parseInt(args[3]) : 1);
-//                fw.fw1(player, repeat, cooldown, height, amount);
-//            }
-//            else {
-//                if (player.hasPermission("fw.admin")) {
-//                    player.sendMessage(prefix + "Используйте /fw <повторов> <задержка> <высота> <кол-во>");
-//                } else {
-//                    player.sendMessage(prefix + "Используйте /fw");
-//                }
-//            }
-//            if (cmd.getName().equals("setspawn") && player.hasPermission("hyneo.admin")){
-//                this.getConfig().set("spawn_location", (Object)LocationUtils.locationToString(player.getLocation(), true));
-//                player.sendMessage(prefix + "Точка спавна успешно установлена! §7("+player.getLocation().getBlockX() + "," +
-//                                                                                    player.getLocation().getBlockY() + "," +
-//                                                                                    player.getLocation().getBlockZ() + "; " +
-//                                                                                    player.getLocation().getPitch() + "," +
-//                                                                                    player.getLocation().getYaw() +")");
-//                this.saveConfig();
-//            }
-//            else if (cmd.getName().equals("kb") && (player.hasPermission("knockback") || player.hasPermission("hyneo.admin") )){
-//                if (kb_users.contains(player)){
-//                    player.sendMessage(kb_mess.replace("%s", "включен"));
-//                }
-//                else {
-//                    player.sendMessage(kb_mess.replace("%s", "выключен"));
-//                }
-//            }
-//            else if (cmd.getName().equals("fly") && (player.hasPermission("fly") || player.hasPermission("hyneo.admin"))){
-//                if (player.getAllowFlight() || player.isFlying()){
-//                    player.sendMessage(fly_mess.replace("%s", "выключен"));
-//                    player.setAllowFlight(true);
-//                    player.setFlying(true);
-//                } else {
-//                    player.sendMessage(fly_mess.replace("%s", "включен"));
-//                    player.setAllowFlight(false);
-//                    player.setFlying(false);
-//                }
-//            }
-//            else if (cmd.getName().equals("glow") && )
 
         }
         else {

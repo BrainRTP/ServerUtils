@@ -39,7 +39,7 @@ public class Chat implements Listener {
             e.setMessage(m);
         }
 
-        if (player.hasPermission("hyneo.admin")) {
+        if (player.hasPermission("admin")) {
             prefixSuffix = Main.admin_chat.split("<name>");
         } else {
             prefixSuffix = Main.default_chat.split("<name>");
