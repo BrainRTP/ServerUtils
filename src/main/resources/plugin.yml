@@ -5,6 +5,7 @@ authors: [BrainRTP]
 description: ServerUtils
 website: vk.com/brainrtp
 commands:
+  bc:
   fw:
   kb:
   fly:
@@ -12,3 +13,6 @@ commands:
   build:
   setspawn:
   gm:
+  do:
+  reglist:
+  test:

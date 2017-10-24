@@ -8,9 +8,9 @@
 #
 prefix: "&f[&cPrufffix&f] > "
 orthography: true
-spawn_location: world;-2680.5;66.0;798.5;0.0;180.0
-knockback_mess: "Режим отталкивания &c%s"
-fly_mess: "Режим полёта &c%s"
+spawnLocation: world;-2680.5;66.0;798.5;0.0;180.0
+knockBackMess: "Режим отталкивания &c%s"
+flyMess: "Режим полёта &c%s"
 glow: "Режим свечения &c%s"
 FireWorks:
   cooldownTime: 2 #Задержка команды (в секундах) (только для '/fw' без аргументов)
@@ -18,7 +18,12 @@ FireWorks:
   minCooldown: 1 #Минимум ожидания между залпами (в секундах)
   maxHeight: 1 #Максимальная высота фейерверк
   maxAmmount: 1 #Максимальное кол-во фейерверк за раз
-
+Motd:
+  - '&f&c                          ▁▂▁'
+  - '              &fДобро пожаловать на &cServer&f!'
+  - '&c» &7Выбери игровой режим для начала игры через стенды или'
+  - '                     &c» &7игровое меню.'
+  - ''
 Chat:
   default: "&7Игрок <name>"
   admin: "&cАдмин &f<name>"

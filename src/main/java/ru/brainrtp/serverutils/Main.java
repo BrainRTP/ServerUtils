@@ -1,92 +1,63 @@
 package ru.brainrtp.serverutils;
 
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteStreams;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Effect;
-import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class Main extends JavaPlugin implements Listener, PluginMessageListener {
+public class Main extends JavaPlugin implements Listener {
 
+    private HashMap<String, String> prisoner = new HashMap<String, String>();
     private static HashMap<String, Long> cooldowns = new HashMap<>();
     static List<Player> kb_users = new ArrayList<Player>();
-    private Integer maxRepeat;
-    private Integer minCooldown;
-    private Integer maxHeight;
-    private Integer maxAmmount;
-    private Integer cd;
-    private Main main;
-    private String prefix;
-    private String kb_mess;
-    private String fly_mess;
-    private String glow;
-    static String spawn_location;
-    static Boolean build = false;
-    static String admin_chat;
-    static String default_chat;
+    static boolean build = false;
+    public static Main instance;
+    private static String username = "user";
+    private static String pass = "pass";
+    private static String database = "database";
+    private static String url = "jdbc:mysql://localhost:3306/";
+    private static String table = "table";
+    protected int i;
+    protected static int old;
 
     @Override
     public void onEnable() {
-
-        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-        this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", this);
+        instance = this;
 
         this.saveDefaultConfig();
-        maxRepeat = this.getConfig().getInt("FireWorks.maxRepeat");
-        minCooldown = this.getConfig().getInt("FireWorks.maxCooldown");
-        maxHeight = this.getConfig().getInt("FireWorks.maxHeight");
-        maxAmmount = this.getConfig().getInt("FireWorks.maxAmmount");
-        cd = this.getConfig().getInt("FireWorks.cooldownTime");
-        prefix = this.getConfig().getString("prefix").replace("&", "§");
-        Boolean orthography = this.getConfig().getBoolean("orthography");
-        kb_mess = this.getConfig().getString("knockback_mess").replace("&", "§");
-        fly_mess = this.getConfig().getString("fly_mess").replace("&", "§");
-        glow = this.getConfig().getString("glow").replace("&", "§");
-        spawn_location = this.getConfig().getString("spawn_location");
-        admin_chat = this.getConfig().getString("Chat.admin").replace('&', '§');
-        default_chat = this.getConfig().getString("Chat.default").replace('&', '§');
         PluginManager pm = this.getServer().getPluginManager();
         pm.registerEvents(this, this);
-        pm.registerEvents((Listener) new EventListener(this), (Plugin)this);
+        pm.registerEvents(new EventListener(this),this);
         Bukkit.getServer().getWorld("world").setTime(40000L);
         Bukkit.getServer().getWorld("world").setGameRuleValue("doDaylightCycle", "false");
         Bukkit.getServer().getWorld("world").setWeatherDuration(99999999);
 
-        if (orthography) {
-            pm.registerEvents((Listener) new Chat(this), (Plugin) this);
-        }
-    }
+        MySQL mySQL = new MySQL();
+        mySQL.setup(username, pass, database, url);
+        ResultSet players = mySQL.query("SELECT * FROM " + table + ";");
+        try {
+            while (players.next()) {
+                old++;
+            }
+        } catch (SQLException e) {e.printStackTrace();}
+        mySQL.closeConnection();
 
-    @Override
-    public void onPluginMessageReceived(String channel, Player player, byte[] message) {
-        if (!channel.equals("BungeeCord")) {
-            return;
-        }
-        ByteArrayDataInput in = ByteStreams.newDataInput(message);
-        String subchannel = in.readUTF();
-        if (subchannel.equals("PlayerList")) {
-            String server = in.readUTF(); // The name of the server you got the player list of, as given in args.
-            String[] playerList = in.readUTF().split(", ");
-            player.sendMessage("Ку)");
-            player.sendMessage(String.valueOf(playerList.length));
+        if (Settings.orthography) {
+            pm.registerEvents(new Chat(this), this);
         }
     }
 
@@ -98,20 +69,20 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
         }
     }
 
-    @EventHandler
-    private void onPlayerTeleport(final PlayerTeleportEvent e) {
-        if (e.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND) {
-            e.getFrom().getWorld().playEffect(e.getFrom(), Effect.ENDER_SIGNAL, 0);
-            e.getFrom().getWorld().playSound(e.getFrom(), Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 1.0f);
-        }
-    }
+//    @EventHandler
+//    private void onPlayerTeleport(final PlayerTeleportEvent e) {
+//        if (e.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND) {
+//            e.getFrom().getWorld().playEffect(e.getFrom(), Effect.ENDER_SIGNAL, 0);
+//            e.getFrom().getWorld().playSound(e.getFrom(), Sound.ENTITY_ENDERMEN_TELEPORT, 1.0f, 1.0f);
+//        }
+//    }
 
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (sender instanceof Player)
         {
             Player player = (Player) sender;
-            int cooldownTime = cd;
+            int cooldownTime = Settings.cd;
 
             switch (cmd.getName()) {
                 case "fw":
@@ -127,24 +98,24 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
                     }
                     else if (cmd.getName().equals("fw") && (player.hasPermission("fw.admin")
                             || player.hasPermission("admin")) && args.length == 4) {
-                        int repeat = (Integer.valueOf(args[0]) <= maxRepeat ? Integer.parseInt(args[0]) : 1);
-                        int cooldown = (Integer.valueOf(args[1]) >= minCooldown ? Integer.parseInt(args[1]) : 1);
-                        int height = (Integer.valueOf(args[2]) <= maxHeight ? Integer.parseInt(args[2]) : 1);
-                        int amount = (Integer.valueOf(args[3]) <= maxAmmount ? Integer.parseInt(args[3]) : 1);
+                        int repeat = (Integer.valueOf(args[0]) <= Settings.maxRepeat ? Integer.parseInt(args[0]) : 1);
+                        int cooldown = (Integer.valueOf(args[1]) >= Settings.minCooldown ? Integer.parseInt(args[1]) : 1);
+                        int height = (Integer.valueOf(args[2]) <= Settings.maxHeight ? Integer.parseInt(args[2]) : 1);
+                        int amount = (Integer.valueOf(args[3]) <= Settings.maxAmmount ? Integer.parseInt(args[3]) : 1);
                         fw.fw1(player, repeat, cooldown, height, amount);
                     }
                     else {
                         if (player.hasPermission("fw.admin")) {
-                            player.sendMessage(prefix + "Используйте /fw <повторов> <задержка> <высота> <кол-во>");
+                            player.sendMessage(Settings.prefix + "Используйте /fw <повторов> <задержка> <высота> <кол-во>");
                         } else {
-                            player.sendMessage(prefix + "Используйте /fw");
+                            player.sendMessage(Settings.prefix + "Используйте /fw");
                         }
                     }
                     break;
                 case "setspawn":
                     if (player.hasPermission("admin")){
-                        this.getConfig().set("spawn_location", (Object)LocationUtils.locationToString(player.getLocation(), true));
-                        player.sendMessage(prefix + "Точка спавна успешно установлена! §7("+player.getLocation().getBlockX() + "," +
+                        this.getConfig().set("spawnLocation", LocationUtils.locationToString(player.getLocation(), true));
+                        player.sendMessage(Settings.prefix + "Точка спавна успешно установлена! §7("+player.getLocation().getBlockX() + "," +
                                 player.getLocation().getBlockY() + "," +
                                 player.getLocation().getBlockZ() + "; " +
                                 player.getLocation().getPitch() + "," +
@@ -157,46 +128,62 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
                     if(player.hasPermission("knockback") || player.hasPermission("admin")){
                         if (kb_users.contains(player)){
                             kb_users.remove(player);
-                            player.sendMessage(kb_mess.replace("%s", "выключен"));
+                            player.sendMessage(Settings.kbMess.replace("%s", "выключен"));
                         }
                         else {
                             kb_users.add(player);
-                            player.sendMessage(kb_mess.replace("%s", "включен"));
+                            player.sendMessage(Settings.kbMess.replace("%s", "включен"));
                         }
                     } else {
-                        player.sendMessage(prefix + "Если вы хотите отталкивать игроков - купите VIP");
+                        player.sendMessage(Settings.prefix + "§cЭта функция доступна только ютуберам!");
                     }
                     break;
 
                 case "fly":
                     if (player.hasPermission("fly") || player.hasPermission("admin")){
                         if (player.getAllowFlight() || player.isFlying()){
-                            player.sendMessage(fly_mess.replace("%s", "выключен"));
+                            player.sendMessage(Settings.flyMess.replace("%s", "выключен"));
                             player.setAllowFlight(false);
                             player.setFlying(false);
                         } else {
-                            player.sendMessage(fly_mess.replace("%s", "включен"));
+                            player.sendMessage(Settings.flyMess.replace("%s", "включен"));
                             player.setAllowFlight(true);
                             player.setFlying(true);
                         }
                     } else {
-                        player.sendMessage(prefix + "Если вы хотите летать - купите VIP");
+                        player.sendMessage(Settings.prefix + "§cЭта функция доступна только от §aVIP §cи выше!");
                     }
                     break;
 
                 case "glow":
                     if (player.hasPermission("glow") || player.hasPermission("admin")){
                         if (player.hasPotionEffect(PotionEffectType.GLOWING)) {
-                            player.sendMessage(glow.replace("%s", "выключен"));
+                            player.sendMessage(Settings.glow.replace("%s", "выключен"));
                             player.removePotionEffect(PotionEffectType.GLOWING);
                         }
                         else {
-                            player.sendMessage(glow.replace("%s", "включен"));
+                            player.sendMessage(Settings.glow.replace("%s", "включен"));
                             player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20000000, 2, true));
                         }
                     }
                     else {
-                        player.sendMessage(prefix + "Если вы хотите такой эффект - купите VIP");
+                        player.sendMessage(Settings.prefix + "§cЭта функция доступна только от §aVIP §cи выше!");
+                    }
+                    break;
+
+                case "do":
+                    if (player.hasPermission("admin")) {
+                        Player sp = Bukkit.getPlayer(args[0]);
+                        if (sp == null || !sp.isOnline()) {
+                            sender.sendMessage(Settings.prefix + "§cИгрок не найден");
+                            return true;
+                        }
+                        String what = "";
+                        for (int i = 1; i < args.length; ++i) {
+                            String arg = String.valueOf(args[i]) + " ";
+                            what = String.valueOf(what) + arg;
+                        }
+                        sp.chat(what);
                     }
                     break;
 
@@ -204,22 +191,79 @@ public class Main extends JavaPlugin implements Listener, PluginMessageListener 
                     if (player.hasPermission("admin")){
                         if (!build){
                             build = true;
-                            player.sendMessage(prefix + "Режим строительства §cвключен.");
+                            player.sendMessage(Settings.prefix + "Режим строительства §cвключен.");
                         } else {
                             build = false;
-                            player.sendMessage(prefix + "Режим строительства §cвыключен.");
+                            player.sendMessage(Settings.prefix + "Режим строительства §cвыключен.");
                         }
                     }
                     break;
+                case "reglist":
+                    if(player.hasPermission("admin")){
 
+                        MySQL mySQL = new MySQL();
+                        mySQL.setup(username, pass, database, url);
+
+                        ResultSet players = mySQL.query("SELECT * FROM " + table + ";");
+                        try {
+                            while (players.next()) {
+                                i++;
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                        player.sendMessage("§7§m-------§7 AuthMe §m-------");
+                        player.sendMessage(" §eВсего:   §b"+i);
+                        player.sendMessage(" §eСегодня: §c"+(i-old));
+                        player.sendMessage("§7§m----------------------");
+                        i = 0;
+                        mySQL.closeConnection();
+                        break;
+                    }
+                case "bc":
+                    if(player.hasPermission("admin")){
+                        String msg = "";
+                        for (int i = 0; i < args.length; ++i) {
+                            final String arg = String.valueOf(args[i]) + " ";
+                            msg = String.valueOf(msg) + arg;
+                        }
+                        msg = msg.trim();
+                        msg = ChatColor.translateAlternateColorCodes('&', msg);
+                        Bukkit.broadcastMessage(msg);
+                    }
                 default:
-                    player.sendMessage("САСАТЬ!");
                     break;
             }
 
         }
         else {
-            Bukkit.getConsoleSender().sendMessage("§f[§cServerUtils§f] > " + ChatColor.DARK_RED + "Команды может использовать только игрок!");}
+            if (cmd.getName().equals("bc")) {
+                String msg = "";
+                for (int i = 0; i < args.length; ++i) {
+                    final String arg = String.valueOf(args[i]) + " ";
+                    msg = String.valueOf(msg) + arg;
+                }
+                msg = msg.trim();
+                msg = ChatColor.translateAlternateColorCodes('&', msg);
+                Bukkit.broadcastMessage(msg);
+            }
+            else if (cmd.getName().equals("do")){
+                Player sp = Bukkit.getPlayer(args[0]);
+                if (sp == null || !sp.isOnline()) {
+                    sender.sendMessage(Settings.prefix + "§cИгрок не найден");
+                    return true;
+                }
+                String what = "";
+                for (int i = 1; i < args.length; ++i) {
+                    String arg = String.valueOf(args[i]) + " ";
+                    what = String.valueOf(what) + arg;
+                }
+                sp.chat(what);
+
+            } else {
+                Bukkit.getConsoleSender().sendMessage("§f[§cServerUtils§f] > " + ChatColor.DARK_RED + "Команды может использовать только игрок!");
+            }
+        }
         return false;
     }
 
